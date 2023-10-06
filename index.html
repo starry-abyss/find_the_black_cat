@@ -15,11 +15,14 @@
     var catPos = new Phaser.Math.Vector2(100, 200);
     var hintText;
         
+    var buttonText;
+        
     var soundInitDone = false;
     
     var meowSounds = [];
     var runSounds = [];
     var winSound;
+    var rain;
         
     var lastMousePos = new Phaser.Math.Vector2(100, 200);
         
@@ -61,6 +64,11 @@
             //'338272__andreasmustola__mjau4.wav'
             //]);
             
+            
+            
+            this.load.audio('rain', [
+            '383888__deleted_user_7146007__rain-hitting-metal.wav'
+            ]);
             
             
             
@@ -120,7 +128,7 @@
                     }
                 }
                 
-                this.initSound();
+                //this.initSound();
             }, this);
             
             this.input.on('pointerup', function (pointer)
@@ -163,6 +171,22 @@
                 this.updateMeow(0);
                 
                 catIsReady = false;
+                
+                buttonText.visible = false;
+                hintText.visible = false;
+                
+                if (!rain.isPlaying)
+                    rain.play({
+                        loop: true
+                        ,mute: false
+                        ,volume: 0.3
+                        ,source: {
+                            x: 400,
+                            y: 300,
+                            refDistance: 1000,
+                        //    //follow: this.image
+                        }
+                    });
             }
         }
         
@@ -200,11 +224,13 @@
             //winSound.stop();
             winSound.play({
                     loop: false
+                    ,mute: false
+                    ,volume: 1
                     ,source: {
-                        x: catPos.x,
-                        y: catPos.y,
+                        x: 400,
+                        y: 300,
                         refDistance: 1000,
-                        //follow: this.image
+                    //    //follow: this.image
                     }
                 });
         }
@@ -264,7 +290,18 @@
             });*/
             
             catDebug = this.add.image(catPos.x, catPos.y, 'red');
-            hintText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+            hintText = this.add.text(70, 70, 'В доме выключилось электричество, но надо покормить кошку! Проблема в том, что кошка напугалась и спряталась. Двигаясь, не спеша, определи, где она сидит, и возьми на руки (левая кнопка). Она сама себя выдаст голосом, однако если ты попытаешься её взять и промахнёшься, то кошка убежит в другое место! После удачного поиска игра начинается заново.', { fontSize: '32px', fill: '#F7941D', wordWrap: { width: 800 - 1.5 * 70 } });
+            
+            buttonText = this.add.text(400 - 70, 600 - 70 * 2, 'поНЯтно!', { fontSize: '48px', fill: '#F7941D' });
+            
+            buttonText.setInteractive();
+            
+            
+            
+            buttonText.on('pointerdown', () => this.initSound());
+            //buttonText.on('pointerover', () => { var f = buttonText.font;f.fill = '#ffffff';buttonText.setStyle(f); })
+            //buttonText.on('pointerout', () => { var f = buttonText.font;f.fill = '#F7941D';buttonText.setStyle(f); });
+            
             
             runSounds.push(this.sound.add('run1'));
             runSounds.push(this.sound.add('run2'));
@@ -286,6 +323,9 @@
             meowSounds.push(this.sound.add('meow3'));
             meowSounds.push(this.sound.add('meow4'));
             
+            rain = this.sound.add('rain');
+
+            
             //this.music = meowSounds[0];
             
             catDebug.visible = false;
@@ -293,7 +333,7 @@
         
         update (time, delta)
         {
-            catDebug.setPosition(catPos.x, catPos.y);
+            //catDebug.setPosition(catPos.x, catPos.y);
             
             this.updateMeow(delta);
         }
