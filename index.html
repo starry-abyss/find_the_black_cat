@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Найди чёрную кошку (сделано на Phaser)</title>
+    <script src="phaser.min.js"></script>
+</head>
+<body>
+    
+    <div id='mygame'></div>
+
+    <script>
+        
+    var catDebug;
+    var catPos = new Phaser.Math.Vector2(100, 200);
+    var hintText;
+        
+    var soundInitDone = false;
+    
+    var meowSounds = [];
+    var runSounds = [];
+    var winSound;
+        
+    var lastMousePos = new Phaser.Math.Vector2(100, 200);
+        
+    var meowTimer = 0;
+        
+    var catIsReady = false;
+    
+    class FindTheBlackCat extends Phaser.Scene
+    {
+        
+        preload ()
+        {
+            //this.load.setBaseURL('https://labs.phaser.io');
+            this.load.setBaseURL('');
+
+            //this.load.image('sky', 'https://labs.phaser.io/assets/skies/space3.png');
+            this.load.image('logo', 'https://labs.phaser.io/assets/sprites/phaser3-logo.png');
+            this.load.image('red', 'https://labs.phaser.io/assets/particles/red.png');
+            
+            //this.load.setBaseURL('');
+            
+            this.load.audio('meow1', [
+            '338272__andreasmustola__mjau4.wav'
+            ]);
+            
+            this.load.audio('meow2', [
+            '333916__lextrack__cat-meowing.mp3'
+            ]);
+            
+            this.load.audio('meow3', [
+            '385892__spacether__262312__steffcaffrey__cat-meow1.mp3'
+            ]);
+            
+            this.load.audio('meow4', [
+            '629502__abir19__catmeowthroaty.wav'
+            ]);
+            
+            //this.load.audio('meow5', [
+            //'338272__andreasmustola__mjau4.wav'
+            //]);
+            
+            
+            
+            
+            this.load.audio('win', [
+            '588234__mehraniiii__win.wav'
+            ]);
+            
+            
+            
+            this.load.audio('run1', [
+            '511817__rvgerxini__light-metal-hitting-ground.mp3'
+            ]);
+            
+            this.load.audio('run2', [
+            '189665__sangtao__open-drawer.wav'
+            ]);
+            
+            this.load.audio('run3', [
+            '388718__sami_kullstrom__hitting-dishwashing-table.wav'
+            ]);
+            
+            this.load.audio('run4', [
+            '457014__rvgerxini__chair-squeaking.mp3'
+            ]);
+    
+            //this.load.audio('run5', [
+            //'511817__rvgerxini__light-metal-hitting-ground.mp3'
+            //]);
+    
+    
+    
+            this.input.setDefaultCursor('url(cursor0_128.png) 64 64, none');
+            
+            //this.sys.sceneUpdate = this.update;
+            
+            this.input.on('pointerdown', function (pointer)
+            {
+                this.input.setDefaultCursor('url(cursor1_128.png) 64 64, none');
+                
+                //catPos = new Phaser.Math.Vector2(100, 400);
+                
+                
+                
+                var mousePos = new Phaser.Math.Vector2(pointer.worldX, pointer.worldY);
+                
+                if (soundInitDone && catIsReady)
+                {
+                    if (catPos.distance(mousePos) < 100)
+                    {
+                        this.winScreen();
+                        this.catHide();
+                    }
+                    else
+                    {
+                        this.playRunSound();
+                        this.catHide();
+                    }
+                }
+                
+                this.initSound();
+            }, this);
+            
+            this.input.on('pointerup', function (pointer)
+            {
+                this.input.setDefaultCursor('url(cursor0_128.png) 64 64, none');
+            }, this);
+            
+            this.input.on('pointermove', pointer => {
+                this.sound.setListenerPosition(pointer.worldX, pointer.worldY);
+                
+                lastMousePos = new Phaser.Math.Vector2(pointer.worldX, pointer.worldY);
+
+                //this.image.x = pointer.worldX;
+                //this.image.y = pointer.worldY;
+                
+                
+                //catDebug.setPosition(catPos.x, catPos.y);
+
+                //this.text.setText(`Audio source at x: ${pointer.worldX} y: ${pointer.worldY}`);
+
+            });
+            
+        }
+        
+        initSound()
+        {
+            if (!soundInitDone)
+            {
+                for (let i = 0; i < meowSounds.length; i++) {
+                    meowSounds[i].stop();
+                } 
+                
+                soundInitDone = true;
+                
+                //this.music.stop();
+                
+                this.music = meowSounds[Math.floor(Math.random() * meowSounds.length)];
+                
+                meowTimer = 2000;
+                this.updateMeow(0);
+                
+                catIsReady = false;
+            }
+        }
+        
+        updateMeow(delta)
+        {
+            if (soundInitDone)
+            {
+                meowTimer -= delta;
+
+                if (meowTimer <= 0)
+                {
+                    this.music.play({
+                            loop: false,
+                            source: {
+                                x: catPos.x,
+                                y: catPos.y,
+                                refDistance: 50,
+                                //follow: this.image
+                            }
+                        });
+
+                    meowTimer = Math.random() * 3000 + 2000;
+                    
+                    catIsReady = true;
+                }
+            }
+        }
+        
+        winScreen()
+        {
+            for (let i = 0; i < meowSounds.length; i++) {
+                meowSounds[i].stop();
+            } 
+            
+            //winSound.stop();
+            winSound.play({
+                    loop: false
+                    ,source: {
+                        x: catPos.x,
+                        y: catPos.y,
+                        refDistance: 1000,
+                        //follow: this.image
+                    }
+                });
+        }
+        
+        catHide()
+        {
+            const border = 100;
+            
+            while (catPos.distance(lastMousePos) < 200)
+            {
+                var newX = Math.floor(Math.random() * (config.width - 2 * border) + border);
+                var newY = Math.floor(Math.random() * (config.height - 2 * border) + border);
+                
+                catPos = new Phaser.Math.Vector2(newX, newY);
+            }
+
+            
+            soundInitDone = false;
+            this.initSound();
+        }
+        
+        playRunSound()
+        {
+            //var sound = runSounds[0];
+            
+            var soundsNotPlaying = [];
+            
+            for (let i = 0; i < runSounds.length; i++) {
+                if (!runSounds[i].isPlaying)
+                    soundsNotPlaying.push(runSounds[i]);
+            } 
+            
+            if (soundsNotPlaying.length > 0)
+            {
+                var sound = soundsNotPlaying[Math.floor(Math.random() * soundsNotPlaying.length)];
+                
+                sound.play({
+                        loop: false,
+                        source: {
+                            x: catPos.x,
+                            y: catPos.y,
+                            refDistance: 1000,
+                            //follow: this.image
+                        }
+                    });
+            }
+        }
+
+        create ()
+        {
+            //this.add.image(400, 300, 'sky');
+
+            /*const particles = this.add.particles(0, 0, 'red', {
+                speed: 100,
+                scale: { start: 1, end: 0 },
+                blendMode: 'ADD'
+            });*/
+            
+            catDebug = this.add.image(catPos.x, catPos.y, 'red');
+            hintText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+            
+            runSounds.push(this.sound.add('run1'));
+            runSounds.push(this.sound.add('run2'));
+            runSounds.push(this.sound.add('run3'));
+            runSounds.push(this.sound.add('run4'));
+            
+            winSound = this.sound.add('win');
+
+            //this.add.image(400, 100, 'logo');
+
+            //logo.setVelocity(100, 200);
+            //logo.setBounce(1, 1);
+            //logo.setCollideWorldBounds(true);
+
+            //particles.startFollow(logo);
+            
+            meowSounds.push(this.sound.add('meow1'));
+            meowSounds.push(this.sound.add('meow2'));
+            meowSounds.push(this.sound.add('meow3'));
+            meowSounds.push(this.sound.add('meow4'));
+            
+            //this.music = meowSounds[0];
+            
+            catDebug.visible = false;
+        }
+        
+        update (time, delta)
+        {
+            catDebug.setPosition(catPos.x, catPos.y);
+            
+            this.updateMeow(delta);
+        }
+    }
+
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        scene: FindTheBlackCat,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 }
+            }
+        },
+        scale: { parent: 'mygame', autoCenter: Phaser.Scale.CENTER_BOTH }
+    };
+
+    const game = new Phaser.Game(config);
+    </script>
+
+</body>
+</html>
