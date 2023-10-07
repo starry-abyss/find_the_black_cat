@@ -15,7 +15,8 @@
     var catPos = new Phaser.Math.Vector2(100, 200);
     var hintText;
         
-    var buttonText;
+    var buttonText = null;
+    var buttonTextOver;
         
     var soundInitDone = false;
     
@@ -140,6 +141,17 @@
                 this.sound.setListenerPosition(pointer.worldX, pointer.worldY);
                 
                 lastMousePos = new Phaser.Math.Vector2(pointer.worldX, pointer.worldY);
+                
+                if (buttonText != null && buttonText.visible)
+                {
+                    //buttonTextOver.visible = buttonText.getBounds().containsPoint(lastMousePos);
+                    
+                    //console.log(buttonText.getBounds());
+                    
+                    var b = buttonText.getBounds();
+                    
+                    buttonTextOver.visible = b.x <= pointer.worldX && b.y <= pointer.worldY && b.x + b.width >= pointer.worldX && b.y + b.height >= pointer.worldY;
+                }
 
                 //this.image.x = pointer.worldX;
                 //this.image.y = pointer.worldY;
@@ -173,6 +185,7 @@
                 catIsReady = false;
                 
                 buttonText.visible = false;
+                buttonTextOver.visible = false;
                 hintText.visible = false;
                 
                 if (!rain.isPlaying)
@@ -182,7 +195,7 @@
                         ,volume: 0.3
                         ,source: {
                             x: 400,
-                            y: 300,
+                            y: -400,
                             refDistance: 1000,
                         //    //follow: this.image
                         }
@@ -292,15 +305,23 @@
             catDebug = this.add.image(catPos.x, catPos.y, 'red');
             hintText = this.add.text(70, 70, 'В доме выключилось электричество, но надо покормить кошку! Проблема в том, что кошка напугалась и спряталась. Двигаясь, не спеша, определи, где она сидит, и возьми на руки (левая кнопка). Она сама себя выдаст голосом, однако если ты попытаешься её взять и промахнёшься, то кошка убежит в другое место! После удачного поиска игра начинается заново.', { fontSize: '32px', fill: '#F7941D', wordWrap: { width: 800 - 1.5 * 70 } });
             
-            buttonText = this.add.text(400 - 70, 600 - 70 * 2, 'поНЯтно!', { fontSize: '48px', fill: '#F7941D' });
+            buttonText = this.add.text(400 - 70 -20, 600 - 70 * 2, 'поНЯтно!', { fontSize: '48px', fill: '#F7941D' });
+            buttonTextOver = this.add.text(400 - 70 -20, 600 - 70 * 2, 'поНЯтно!', { fontSize: '48px', fill: '#FFFFFF' });
             
             buttonText.setInteractive();
+            buttonTextOver.setInteractive();
             
+            
+            buttonTextOver.visible = false;
+            
+            //buttonTextOver.input.pixelPerfectOver = true;
             
             
             buttonText.on('pointerdown', () => this.initSound());
-            //buttonText.on('pointerover', () => { var f = buttonText.font;f.fill = '#ffffff';buttonText.setStyle(f); })
-            //buttonText.on('pointerout', () => { var f = buttonText.font;f.fill = '#F7941D';buttonText.setStyle(f); });
+            buttonTextOver.on('pointerdown', () => this.initSound());
+            
+            //buttonText.on('pointerover', () => { buttonTextOver.visible = true; })
+            //buttonText.on('pointerout', () => { buttonTextOver.visible = false; });
             
             
             runSounds.push(this.sound.add('run1'));
